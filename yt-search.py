@@ -1,4 +1,13 @@
 import urllib.request, re, random, string
+import keys
+from googleapiclient.discovery import build
+
+
+DEVELOPER_KEY = keys.YOUTUBE_KEY
+YOUTUBE_API_SERVICE_NAME = 'youtube'
+YOUTUBE_API_VERSION = 'v3'
+
+youtube = build(YOUTUBE_API_SERVICE_NAME, YOUTUBE_API_VERSION, developerKey=DEVELOPER_KEY)
 
 # Collect random word from the configured word site.
 # Get list of words from site, choose one randomly, and return single word as string
@@ -9,10 +18,29 @@ def randomWord():
     finalWord = wordList[random.randint(0, len(wordList)-1)]
     return(finalWord)
 
-#searches for search term and returns a list of video IDs
-def findVideos(searchTerm):
-    html = urllib.request.urlopen("https://www.youtube.com/results?search_query="+str(searchTerm)+"&sp=CAI%253D")
-    videoIds = re.findall(r"watch\?v=(\S{11})", html.read().decode())
-    return(videoIds)
+#performs search with basic youtube filter parameters and returns a list of video IDs 
+def youtubeSearch(searchTerm):
+    searchResponse = youtube.search().list(q=searchTerm, part='snippet', order='date', type='video', videoDuration='short', maxResults=50).execute()
+    allIds = []
+    for item in searchResponse.get('items', []):
+        allIds.append(item['id']['videoId'])
+    print("Number of videos found: "+str(len(allIds)))
+    return(allIds)
 
-print(findVideos(randomWord()))
+#Intakes the list of IDs and gathers more stats on the video and sorts with more specific parameters ex: length and view count
+def parseVideoData(videoIdList):
+    matchingIds = []
+    maxview=200
+    minview=0
+    for videoId in videoIdList:
+        statsResponse = youtube.videos().list(part='statistics, contentDetails', id=videoId).execute()
+        vidDuration = statsResponse.get('items', [])[0]['contentDetails']['duration']
+        vidViews = int(statsResponse.get('items', [])[0]['statistics']['viewCount'])
+        print(vidViews)
+        if vidViews < maxview and vidViews > minview:
+            matchingIds.append(videoId)
+    return(matchingIds)
+
+
+
+print(parseVideoData(youtubeSearch(randomWord())))
