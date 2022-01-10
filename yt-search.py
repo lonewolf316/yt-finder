@@ -28,16 +28,14 @@ def youtubeSearch(searchTerm):
     return(allIds)
 
 #Intakes the list of IDs and gathers more stats on the video and sorts with more specific parameters ex: length and view count
-def parseVideoData(videoIdList):
+def parseVideoData(videoIdList, maxView=200, minView=0):
     matchingIds = []
-    maxview=200
-    minview=0
     for videoId in videoIdList:
         statsResponse = youtube.videos().list(part='statistics, contentDetails', id=videoId).execute()
         vidDuration = statsResponse.get('items', [])[0]['contentDetails']['duration']
         vidViews = int(statsResponse.get('items', [])[0]['statistics']['viewCount'])
         print(vidViews)
-        if vidViews < maxview and vidViews > minview:
+        if vidViews < maxView and vidViews > minView:
             matchingIds.append(videoId)
     return(matchingIds)
 
