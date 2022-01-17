@@ -52,5 +52,5 @@ if __name__ == "__main__":
     searchWord = randomWord() #generate a random word to search for - just returns a string
     searchResults = youtubeSearch(youtube, searchWord) #pass youtube object and string into function to conduct a search. returns a list of <=50 results
     matchingResults = parseVideoData(youtube, searchResults) #results are parsed and checked for time and view count to match settings. returns list of video IDs
-    linkList = idToLink() #video ID list is converted to list of links for ease of use.
+    linkList = idToLink(matchingResults) #video ID list is converted to list of links for ease of use.
     print(linkList)
